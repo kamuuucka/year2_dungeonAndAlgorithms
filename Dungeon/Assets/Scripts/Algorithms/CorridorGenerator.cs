@@ -8,11 +8,16 @@ namespace Algorithms
       [SerializeField] protected Vector2Int startPosition = Vector2Int.zero;
       [SerializeField] private int corridorLength = 10;
       [SerializeField] private int corridorCount = 10;
-      [SerializeField] private float percent;
       [SerializeField] private TileMapDrawer visualiser;
-      
+
       private HashSet<Vector2Int> _corridor = new HashSet<Vector2Int>();
-   
+
+      public HashSet<Vector2Int> Corridor
+      {
+         get => _corridor;
+         set => _corridor = value;
+      }
+
       public void Run()
       {
          _corridor = GenerateCorridors();
@@ -32,6 +37,7 @@ namespace Algorithms
       private HashSet<Vector2Int> GenerateCorridors()
       {
          HashSet<Vector2Int> floorPositions = new HashSet<Vector2Int>();
+         
 
          Vector2Int currentPosition = startPosition;
          for (int i = 0; i < corridorCount; i++)
