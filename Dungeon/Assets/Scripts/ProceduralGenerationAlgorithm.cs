@@ -24,6 +24,22 @@ public class ProceduralGenerationAlgorithm
 
         return path;
     }
+
+    //list instead of hashset to get the last position
+    public static List<Vector2Int> SimpleRandomWalkCorridor(Vector2Int startPosition, int corridorLength)
+    {
+        List<Vector2Int> corridor = new List<Vector2Int>();
+        Vector2Int direction = DirectionsClass.GetRandomDirection();
+        Vector2Int currentPosition = startPosition;
+        corridor.Add(currentPosition);
+        for (int i = 0; i < corridorLength; i++)
+        {
+            currentPosition += direction;
+            corridor.Add(currentPosition);
+        }
+
+        return corridor;
+    }
 }
 
 public static class DirectionsClass
@@ -37,8 +53,12 @@ public static class DirectionsClass
         new Vector2Int(-1, 0)
     };
 
+    public static List<Vector2Int> GetDirections() => Directions;
+    
     public static Vector2Int GetRandomDirection()
     {
         return Directions[Random.Range(0, Directions.Count)];
     }
+
+    
 }

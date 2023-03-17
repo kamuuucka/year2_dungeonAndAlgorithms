@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Algorithms;
 using UnityEditor;
 using UnityEngine;
 
@@ -25,7 +26,7 @@ public class SimpleWalkEditor : Editor
         {
             randomWalk.PlaceTiles();
         }
-        
+
         if (GUILayout.Button("Generate SO"))
         {
             RandomWalkSO newSo = new RandomWalkSO();
