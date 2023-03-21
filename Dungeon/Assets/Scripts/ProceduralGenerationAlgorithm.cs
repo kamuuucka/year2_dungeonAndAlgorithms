@@ -46,9 +46,11 @@ public class ProceduralGenerationAlgorithm
     public static List<BoundsInt> BSP(BoundsInt spaceToSplit, int minWidth, int minHeight)
     {
         Queue<BoundsInt> rooms = new Queue<BoundsInt>();
+        rooms.Clear();
         rooms.Enqueue(spaceToSplit);
         
         List<BoundsInt> roomsList = new List<BoundsInt>();
+        roomsList.Clear();
 
         while (rooms.Count > 0)
         {

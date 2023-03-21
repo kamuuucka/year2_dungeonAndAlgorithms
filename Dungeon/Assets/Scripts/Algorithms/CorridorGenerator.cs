@@ -29,33 +29,17 @@ namespace Algorithms
 
         public void Run()
         {
+            _corridor.Clear();
+            _roomsCreated.Clear();
+            _newroomsCreated.Clear();
             _corridor = GenerateCorridors();
             _roomsCreated = GenerateRooms();
             _newroomsCreated = GenerateRoomsEnds(FindEnds(_corridor), _roomsCreated);
             var roomList = ProceduralGenerationAlgorithm.BSP(
-                new BoundsInt(new Vector3Int(100, 100, 0), new Vector3Int(dungeonWidth, dungeonHeight, 0)),
+                new BoundsInt(new Vector3Int(0, 0, 0), new Vector3Int(dungeonWidth, dungeonHeight, 0)),
                 minWidth, minHeight);
             floor = CreateSimpleRooms(roomList, _roomsCreated, _newroomsCreated);
-
-            // floor.ElementAt(1).Set(0,0);
-            // foreach (var room in floor)
-            // {
-            //    SetRoomsCenter(room);
-            // }
-            // SetRoomsCenter(floor.ElementAt(1));
-            // Debug.Log($"Room at 0,0: {floor.ElementAt(1).x},{floor.ElementAt(1).y}");
-
-            //_roomsFinal = PutRoomsOnPossible();
         }
-
-        // private HashSet<Vector2Int> PutRoomsOnPossible()
-        // {
-        //    List<Vector2Int> rooms = floor.ToList();
-        //    for (int i =0; i < _newroomsCreated.Count; i++)
-        //    {
-        //    }
-        //    
-        // }
 
         private void SetRoomsCenter(Vector2Int room)
         {
@@ -66,13 +50,13 @@ namespace Algorithms
 
         private HashSet<Vector2Int> CreateSimpleRooms(List<BoundsInt> roomList, HashSet<Vector2Int> roomsPositions, HashSet<Vector2Int> endPositions)
         {
+            Debug.Log("expected rooms 1: " + roomsPositions.Count + endPositions.Count);
             //TODO: offset is not working correctly? Rooms are still spawning connected
-            Debug.Log(roomList.Count);
-            Debug.Log(roomsPositions.Count);
             HashSet<Vector2Int> roomFloor = new HashSet<Vector2Int>();
 
+            roomsPositions.UnionWith(endPositions);
             List<Vector2Int> positions = roomsPositions.ToList();
-            positions.AddRange(endPositions.ToList());
+            Debug.Log("expected rooms 2: " + positions.Count);
 
             for (int i = 0; i < roomList.Count; i++)
             {
@@ -80,15 +64,14 @@ namespace Algorithms
                 {
                     BoundsInt room = roomList[i];
                     var boundsInt1 = room;
-                    boundsInt1.position = new Vector3Int(positions[i].x, positions[i].y, 0);
+                    boundsInt1.position = new Vector3Int(positions[i].x - boundsInt1.size.x/2, positions[i].y- boundsInt1.size.y/2, 0);
+                    Debug.Log(i + "\t" + boundsInt1.position + "\t" + boundsInt1.min + "\t" + boundsInt1.size + "\t" + boundsInt1.max );
 
-                    for (int col = offset; col < boundsInt1.size.x - offset; col++)
+                    for (int col = boundsInt1.min.x; col < boundsInt1.max.x; col++)
                     {
-                        for (int row = offset; row < boundsInt1.size.y - offset; row++)
+                        for (int row = boundsInt1.min.y; row < boundsInt1.max.y; row++)
                         {
-                            Vector2Int position = (Vector2Int)boundsInt1.min + new Vector2Int(row, col);
-                            position.x -= boundsInt1.size.x / 2;
-                            position.y -= boundsInt1.size.y / 2;
+                            Vector2Int position = new Vector2Int(col, row);
                             roomFloor.Add(position);
                         }
                     }
@@ -116,6 +99,7 @@ namespace Algorithms
 
         private HashSet<Vector2Int> GenerateCorridors()
         {
+            _corridorEnds.Clear();
             HashSet<Vector2Int> floorPositions = new HashSet<Vector2Int>();
             Vector2Int currentPosition = startPosition;
             for (int i = 0; i < corridorCount; i++)
@@ -142,10 +126,10 @@ namespace Algorithms
             for (int i = 0; i < roomsToBeCreated; i++)
             {
                 possibleRoomPositions.Add(rooms[i]);
-                Debug.Log(rooms[i]);
+                Debug.Log("Room can be spawned at: " + rooms[i]);
             }
 
-
+            Debug.Log("Rooms positions: " + possibleRoomPositions.Count);
             return possibleRoomPositions;
         }
 
@@ -160,7 +144,7 @@ namespace Algorithms
                     newRooms.Add(end);
                 }
             }
-
+            Debug.Log("Rooms end: " + newRooms.Count);
             return newRooms;
         }
 
