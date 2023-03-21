@@ -12,6 +12,8 @@ using UnityEngine.Serialization;
     [SerializeField] private CorridorGenerator corridors;
     [SerializeField] private float percent = 0.8f;
     [SerializeField] private TileMapDrawer visualiser;
+    [SerializeField] private int minHeight;
+    [SerializeField] private int minWidth;
 
     public void Start()
     {

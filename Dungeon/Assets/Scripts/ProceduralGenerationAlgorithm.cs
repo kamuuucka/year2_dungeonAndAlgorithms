@@ -40,6 +40,77 @@ public class ProceduralGenerationAlgorithm
 
         return corridor;
     }
+
+
+    //BoundsInt - never rotated square
+    public static List<BoundsInt> BSP(BoundsInt spaceToSplit, int minWidth, int minHeight)
+    {
+        Queue<BoundsInt> rooms = new Queue<BoundsInt>();
+        rooms.Enqueue(spaceToSplit);
+        
+        List<BoundsInt> roomsList = new List<BoundsInt>();
+
+        while (rooms.Count > 0)
+        {
+            BoundsInt room = rooms.Dequeue();
+            if (room.size.x >= minWidth && room.size.y >= minHeight)
+            {
+                if (Random.value < 0.5f)    //to make sure that random split is more random
+                {
+                    if (room.size.x >= minWidth * 2)
+                    {
+                        SplitV(rooms,room,minWidth);
+                    } 
+                    else if (room.size.y >= minHeight * 2)
+                    {
+                        SplitH(rooms,room,minHeight);
+                    }
+                    else
+                    {
+                        roomsList.Add(room);
+                    } 
+                }
+                else
+                {
+                    if (room.size.y >= minHeight * 2)
+                    {
+                        SplitH(rooms,room,minHeight);
+                    }
+                    else if (room.size.x >= minWidth * 2)
+                    {
+                        SplitV(rooms,room,minWidth);
+                    }
+                    else
+                    {
+                        roomsList.Add(room);
+                    } 
+                }
+            }
+           
+        }
+        return roomsList;
+    }
+
+    private static void SplitV(Queue<BoundsInt> rooms, BoundsInt room, int minWidth)
+    {
+        int xSplit = Random.Range(minWidth, room.size.y - minWidth);
+        BoundsInt room1 = new BoundsInt(room.min, new Vector3Int(xSplit, room.size.y, room.size.z));
+        BoundsInt room2 = new BoundsInt(new Vector3Int(room.min.x + xSplit, room.min.y, room.min.z),
+            new Vector3Int(room.size.x - xSplit, room.size.y, room.size.z));
+        rooms.Enqueue(room1);
+        rooms.Enqueue(room2);
+    }
+    
+    private static void SplitH(Queue<BoundsInt> rooms, BoundsInt room, int minHeight)
+    {
+        int ySplit = Random.Range(minHeight, room.size.x - minHeight);
+        BoundsInt room1 = new BoundsInt(room.min, new Vector3Int(room.size.x, ySplit, room.size.z));
+        BoundsInt room2 = new BoundsInt(new Vector3Int(room.min.x, room.min.y + ySplit, room.min.z),
+            new Vector3Int(room.size.x, room.size.y - ySplit, room.size.z));
+        rooms.Enqueue(room1);
+        rooms.Enqueue(room2);
+    }
+    
 }
 
 public static class DirectionsClass
@@ -54,11 +125,9 @@ public static class DirectionsClass
     };
 
     public static List<Vector2Int> GetDirections() => Directions;
-    
+
     public static Vector2Int GetRandomDirection()
     {
         return Directions[Random.Range(0, Directions.Count)];
     }
-
-    
 }
