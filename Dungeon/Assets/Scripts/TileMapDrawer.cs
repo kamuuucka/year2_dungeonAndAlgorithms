@@ -12,6 +12,8 @@ public class TileMapDrawer : MonoBehaviour
     [SerializeField] private TileBase tileWall;
     [SerializeField] private TileBase tileRoom;
 
+    [SerializeField] private List<TileBase> tilesWalls;
+
     //IEnumerable is used as the most generic collection,
     //we don't need any access to the elements except for reading them, so we don't need more advanced collection
     public void PaintTiles(IEnumerable<Vector2Int> floorPositions)
@@ -34,10 +36,10 @@ public class TileMapDrawer : MonoBehaviour
         }
     }
 
-    public void PaintWall(Vector2Int position)
+    public void PaintWall(Vector2Int position, int type)
     {
         Vector3Int wallPosition = tilemap.WorldToCell((Vector3Int)position);
-        tilemap.SetTile(wallPosition, tileWall);
+        tilemap.SetTile(wallPosition, tilesWalls[type]);
     }
 
     public void Clear()

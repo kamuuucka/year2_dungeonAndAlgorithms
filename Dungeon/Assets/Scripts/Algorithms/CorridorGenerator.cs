@@ -41,13 +41,6 @@ namespace Algorithms
             floor = CreateSimpleRooms(roomList, _roomsCreated, _newroomsCreated);
         }
 
-        private void SetRoomsCenter(Vector2Int room)
-        {
-            room.x = 0;
-            room.y = 0;
-            room.Set(0, 0);
-        }
-
         private HashSet<Vector2Int> CreateSimpleRooms(List<BoundsInt> roomList, HashSet<Vector2Int> roomsPositions, HashSet<Vector2Int> endPositions)
         {
             Debug.Log("expected rooms 1: " + roomsPositions.Count + endPositions.Count);
@@ -77,7 +70,6 @@ namespace Algorithms
                     }
                 }
             }
-
             return roomFloor;
         }
 

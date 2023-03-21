@@ -48,7 +48,7 @@ public class ProceduralGenerationAlgorithm
         Queue<BoundsInt> rooms = new Queue<BoundsInt>();
         rooms.Clear();
         rooms.Enqueue(spaceToSplit);
-        
+
         List<BoundsInt> roomsList = new List<BoundsInt>();
         roomsList.Clear();
 
@@ -57,39 +57,39 @@ public class ProceduralGenerationAlgorithm
             BoundsInt room = rooms.Dequeue();
             if (room.size.x >= minWidth && room.size.y >= minHeight)
             {
-                if (Random.value < 0.5f)    //to make sure that random split is more random
+                if (Random.value < 0.5f) //to make sure that random split is more random
                 {
                     if (room.size.x >= minWidth * 2)
                     {
-                        SplitV(rooms,room,minWidth);
-                    } 
+                        SplitV(rooms, room, minWidth);
+                    }
                     else if (room.size.y >= minHeight * 2)
                     {
-                        SplitH(rooms,room,minHeight);
+                        SplitH(rooms, room, minHeight);
                     }
                     else
                     {
                         roomsList.Add(room);
-                    } 
+                    }
                 }
                 else
                 {
                     if (room.size.y >= minHeight * 2)
                     {
-                        SplitH(rooms,room,minHeight);
+                        SplitH(rooms, room, minHeight);
                     }
                     else if (room.size.x >= minWidth * 2)
                     {
-                        SplitV(rooms,room,minWidth);
+                        SplitV(rooms, room, minWidth);
                     }
                     else
                     {
                         roomsList.Add(room);
-                    } 
+                    }
                 }
             }
-           
         }
+
         return roomsList;
     }
 
@@ -102,7 +102,7 @@ public class ProceduralGenerationAlgorithm
         rooms.Enqueue(room1);
         rooms.Enqueue(room2);
     }
-    
+
     private static void SplitH(Queue<BoundsInt> rooms, BoundsInt room, int minHeight)
     {
         int ySplit = Random.Range(minHeight, room.size.x - minHeight);
@@ -112,7 +112,6 @@ public class ProceduralGenerationAlgorithm
         rooms.Enqueue(room1);
         rooms.Enqueue(room2);
     }
-    
 }
 
 public static class DirectionsClass
@@ -126,7 +125,30 @@ public static class DirectionsClass
         new Vector2Int(-1, 0)
     };
 
+    private static readonly Dictionary<Vector2Int, int> DirectionsTypes = new Dictionary<Vector2Int, int>()
+    {
+        [new Vector2Int(0, 1)]   = 0,
+        [new Vector2Int(1, 0)]   = 1,
+        [new Vector2Int(0, -1)]  = 2,
+        [new Vector2Int(-1, 0)]  = 3,
+        // [new Vector2Int(1, 1)]   = 4,
+        // [new Vector2Int(1, -1)]  = 5,
+        // [new Vector2Int(-1, -1)] = 6,
+        // [new Vector2Int(-1, 1)]  = 7
+    };
+
+    //up-right, down-right, down-left, up-left
+    private static readonly List<Vector2Int> DirectionsDiagonal = new List<Vector2Int>
+    {
+        new Vector2Int(1, 1),
+        new Vector2Int(1, -1),
+        new Vector2Int(-1, -1),
+        new Vector2Int(-1, 1)
+    };
+
     public static List<Vector2Int> GetDirections() => Directions;
+    public static List<Vector2Int> GetDirectionsDiagonal() => DirectionsDiagonal;
+    public static Dictionary<Vector2Int, int> GetDirectionsTypes() => DirectionsTypes;
 
     public static Vector2Int GetRandomDirection()
     {
