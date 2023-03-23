@@ -18,12 +18,12 @@ using UnityEngine.Serialization;
         GenerateRooms();
     }
 
-    private HashSet<Vector2Int> GenerateRooms()
+    private HashSet<Vector2> GenerateRooms()
     {
-        HashSet<Vector2Int> possibleRoomPositions = corridors.Corridor;
+        HashSet<Vector2> possibleRoomPositions = corridors.Corridor;
         int roomsToBeCreated = Mathf.RoundToInt(possibleRoomPositions.Count * percent);
         Debug.Log(roomsToBeCreated);
-        List<Vector2Int> rooms = new List<Vector2Int>(possibleRoomPositions);
+        List<Vector2> rooms = new List<Vector2>(possibleRoomPositions);
         rooms = possibleRoomPositions.OrderBy(x => Guid.NewGuid()).Take(possibleRoomPositions.Count).ToList();
         possibleRoomPositions.Clear();
         for (int i = 0; i < roomsToBeCreated; i++)

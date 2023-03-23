@@ -7,7 +7,7 @@ namespace Algorithms
 {
     public class CorridorGenerator : MonoBehaviour
     {
-        [SerializeField] protected Vector2Int startPosition = Vector2Int.zero;
+        [SerializeField] protected Vector2 startPosition = Vector2.zero;
         [SerializeField] private int corridorLength = 10;
         [SerializeField] private int corridorCount = 10;
         [SerializeField] private float percent = 0.8f;
@@ -17,21 +17,26 @@ namespace Algorithms
         [SerializeField] private int dungeonHeight = 20;
         [SerializeField] private int dungeonWidth = 20;
 
-        private HashSet<Vector2Int> _corridor = new HashSet<Vector2Int>();
-        private HashSet<Vector2Int> _corridorEnds = new HashSet<Vector2Int>();
-        private HashSet<Vector2Int> _roomsCreated = new HashSet<Vector2Int>();
-        private HashSet<Vector2Int> _newroomsCreated = new HashSet<Vector2Int>();
-        private HashSet<Vector2Int> floor = new HashSet<Vector2Int>();
-        private HashSet<Vector2Int> _roomsFinal = new HashSet<Vector2Int>();
+        private HashSet<Vector2> _corridor = new HashSet<Vector2>();
+        private HashSet<Vector2> _corridorEnds = new HashSet<Vector2>();
+        private HashSet<Vector2> _roomsCreated = new HashSet<Vector2>();
+        private HashSet<Vector2> _newroomsCreated = new HashSet<Vector2>();
+        private HashSet<Vector2> floor = new HashSet<Vector2>();
+        private HashSet<Vector2> _roomsFinal = new HashSet<Vector2>();
+        private List<Vector2> positions = new List<Vector2>();
+        private Dictionary<Vector2, Vector2> doors = new Dictionary<Vector2, Vector2>();
         [SerializeField] private int offset = 1;
 
-        public HashSet<Vector2Int> Corridor => _corridorEnds;
+        public HashSet<Vector2> Corridor => _corridorEnds;
 
         public void Run()
         {
+            visualiser.doorPositions.Clear();
             _corridor.Clear();
             _roomsCreated.Clear();
             _newroomsCreated.Clear();
+            positions.Clear();
+            doors.Clear();
             _corridor = GenerateCorridors();
             _roomsCreated = GenerateRooms();
             _newroomsCreated = GenerateRoomsEnds(FindEnds(_corridor), _roomsCreated);
@@ -39,17 +44,18 @@ namespace Algorithms
                 new BoundsInt(new Vector3Int(0, 0, 0), new Vector3Int(dungeonWidth, dungeonHeight, 0)),
                 minWidth, minHeight);
             floor = CreateSimpleRooms(roomList, _roomsCreated, _newroomsCreated);
+            
+            Debug.Log("Doors in run: " + doors.Count);
         }
 
-        private HashSet<Vector2Int> CreateSimpleRooms(List<BoundsInt> roomList, HashSet<Vector2Int> roomsPositions, HashSet<Vector2Int> endPositions)
+        private HashSet<Vector2> CreateSimpleRooms(List<BoundsInt> roomList, HashSet<Vector2> roomsPositions, HashSet<Vector2> endPositions)
         {
-            Debug.Log("expected rooms 1: " + roomsPositions.Count + endPositions.Count);
-            //TODO: offset is not working correctly? Rooms are still spawning connected
-            HashSet<Vector2Int> roomFloor = new HashSet<Vector2Int>();
+            //Debug.Log("expected rooms 1: " + roomsPositions.Count + endPositions.Count);
+            HashSet<Vector2> roomFloor = new HashSet<Vector2>();
 
             roomsPositions.UnionWith(endPositions);
-            List<Vector2Int> positions = roomsPositions.ToList();
-            Debug.Log("expected rooms 2: " + positions.Count);
+            positions = roomsPositions.ToList();
+            //Debug.Log("expected rooms 2: " + positions.Count);
 
             for (int i = 0; i < roomList.Count; i++)
             {
@@ -57,14 +63,14 @@ namespace Algorithms
                 {
                     BoundsInt room = roomList[i];
                     var boundsInt1 = room;
-                    boundsInt1.position = new Vector3Int(positions[i].x - boundsInt1.size.x/2, positions[i].y- boundsInt1.size.y/2, 0);
-                    Debug.Log(i + "\t" + boundsInt1.position + "\t" + boundsInt1.min + "\t" + boundsInt1.size + "\t" + boundsInt1.max );
+                    boundsInt1.position = new Vector3Int((int)positions[i].x - boundsInt1.size.x/2, (int)positions[i].y- boundsInt1.size.y/2, 0);
+                    //Debug.Log(i + "\t" + boundsInt1.position + "\t" + boundsInt1.min + "\t" + boundsInt1.size + "\t" + boundsInt1.max );
 
                     for (int col = boundsInt1.min.x; col < boundsInt1.max.x; col++)
                     {
                         for (int row = boundsInt1.min.y; row < boundsInt1.max.y; row++)
                         {
-                            Vector2Int position = new Vector2Int(col, row);
+                            Vector2 position = new Vector2(col, row);
                             roomFloor.Add(position);
                         }
                     }
@@ -76,12 +82,38 @@ namespace Algorithms
 
         public void PlaceTiles()
         {
+            //doors.Clear();
             visualiser.PaintTiles(_corridor);
+            Debug.Log("Corridor walls");
             GenerateWalls.PlaceWalls(_corridor, visualiser);
-            visualiser.PaintRooms(_roomsCreated);
-            visualiser.PaintRooms(_newroomsCreated);
             visualiser.PaintTiles(floor);
+            Debug.Log("Room walls");
             GenerateWalls.PlaceWalls(floor, visualiser);
+            Debug.Log(visualiser.doorPositions.Count);
+            doors = FindDoors(positions, visualiser.doorPositions);
+            Debug.Log(doors.Count);
+            for (int i = 0; i < doors.Count; i++)
+            {
+                if (i % 3 == 0)
+                {
+                    visualiser.PaintDoor(doors.ElementAt(i).Key);
+                    float roomDist = Vector2.Distance(doors.ElementAt(i).Value, startPosition);
+                    float doorDist = Vector2.Distance(doors.ElementAt(i).Key, startPosition);
+                    if (roomDist < doorDist)
+                    {
+                        visualiser.PaintDoor(doors.ElementAt(i).Value);
+                    }
+                }
+                
+            }
+        }
+
+        private void OnDrawGizmosSelected()
+        {
+            foreach (var doorPair in doors)
+            {
+                Gizmos.DrawLine(new Vector3(doorPair.Key.x, doorPair.Key.y,0), new Vector3(doorPair.Value.x, doorPair.Value.y,0));
+            }
         }
 
         public void Clear()
@@ -89,14 +121,44 @@ namespace Algorithms
             visualiser.Clear();
         }
 
-        private HashSet<Vector2Int> GenerateCorridors()
+        private Dictionary<Vector2, Vector2> FindDoors(List<Vector2> roomsPositions, List<Vector2> doorPositions)
+        {
+            Dictionary<Vector2, Vector2> doorsAndCenters = new Dictionary<Vector2, Vector2>();
+            Debug.Log("DOORS FINDER");
+            Debug.Log(roomsPositions.Count);
+            Debug.Log(doorPositions.Count);
+            
+            
+            foreach (var door in doorPositions)
+            {
+                Vector2 roomCenter = Vector2.zero;
+                float closest = Mathf.Infinity;
+                Vector2 currentPosition = door;
+                foreach (var room in roomsPositions)
+                {
+                    float distance = Vector2.Distance(room, currentPosition);
+                    if (distance < closest)
+                    {
+                        
+                        closest = distance;
+                        roomCenter = room;
+                    }
+                }
+                doorsAndCenters.Add(door,new Vector2((int)roomCenter.x, (int)roomCenter.y));
+            }
+
+            return doorsAndCenters;
+        }
+        
+
+        private HashSet<Vector2> GenerateCorridors()
         {
             _corridorEnds.Clear();
-            HashSet<Vector2Int> floorPositions = new HashSet<Vector2Int>();
-            Vector2Int currentPosition = startPosition;
+            HashSet<Vector2> floorPositions = new HashSet<Vector2>();
+            Vector2 currentPosition = startPosition;
             for (int i = 0; i < corridorCount; i++)
             {
-                List<Vector2Int> corridor =
+                List<Vector2> corridor =
                     ProceduralGenerationAlgorithm.SimpleRandomWalkCorridor(currentPosition, corridorLength);
                 currentPosition = corridor[^1]; //last one
                 _corridorEnds.Add(currentPosition);
@@ -107,28 +169,28 @@ namespace Algorithms
         }
 
         //TODO: SOMEHOW move it to another script (maybe SO?)
-        private HashSet<Vector2Int> GenerateRooms()
+        private HashSet<Vector2> GenerateRooms()
         {
-            HashSet<Vector2Int> possibleRoomPositions = _corridorEnds;
+            HashSet<Vector2> possibleRoomPositions = _corridorEnds;
             int roomsToBeCreated = Mathf.RoundToInt(possibleRoomPositions.Count * percent);
-            List<Vector2Int> rooms = new List<Vector2Int>(possibleRoomPositions);
-            rooms = possibleRoomPositions.OrderBy(x => Guid.NewGuid()).Take(possibleRoomPositions.Count)
-                .ToList();
+            List<Vector2> rooms = new List<Vector2>(possibleRoomPositions);
+            //rooms = possibleRoomPositions.OrderBy(x => Guid.NewGuid()).Take(possibleRoomPositions.Count)
+                //.ToList();
             possibleRoomPositions.Clear();
             for (int i = 0; i < roomsToBeCreated; i++)
             {
                 possibleRoomPositions.Add(rooms[i]);
-                Debug.Log("Room can be spawned at: " + rooms[i]);
+                //Debug.Log("Room can be spawned at: " + rooms[i]);
             }
 
-            Debug.Log("Rooms positions: " + possibleRoomPositions.Count);
+            //Debug.Log("Rooms positions: " + possibleRoomPositions.Count);
             return possibleRoomPositions;
         }
 
-        private HashSet<Vector2Int> GenerateRoomsEnds(HashSet<Vector2Int> deadEnds,
-            HashSet<Vector2Int> possibleRooms)
+        private HashSet<Vector2> GenerateRoomsEnds(HashSet<Vector2> deadEnds,
+            HashSet<Vector2> possibleRooms)
         {
-            HashSet<Vector2Int> newRooms = new HashSet<Vector2Int>();
+            HashSet<Vector2> newRooms = new HashSet<Vector2>();
             foreach (var end in deadEnds)
             {
                 if (!possibleRooms.Contains(end))
@@ -136,18 +198,18 @@ namespace Algorithms
                     newRooms.Add(end);
                 }
             }
-            Debug.Log("Rooms end: " + newRooms.Count);
+            //Debug.Log("Rooms end: " + newRooms.Count);
             return newRooms;
         }
 
-        private HashSet<Vector2Int> FindEnds(HashSet<Vector2Int> floorPositions)
+        private HashSet<Vector2> FindEnds(HashSet<Vector2> floorPositions)
         {
-            HashSet<Vector2Int> deadEnds = new HashSet<Vector2Int>();
-            foreach (Vector2Int floor in floorPositions)
+            HashSet<Vector2> deadEnds = new HashSet<Vector2>();
+            foreach (Vector2 floor in floorPositions)
             {
                 int neighbours = 0;
 
-                foreach (Vector2Int direction in DirectionsClass.GetDirections())
+                foreach (Vector2 direction in DirectionsClass.GetDirections())
                 {
                     if (floorPositions.Contains(floor + direction))
                     {
