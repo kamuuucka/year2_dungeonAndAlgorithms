@@ -71,16 +71,9 @@ namespace Algorithms
             for (int i = 0; i < iterations; i++)
             {
                 HashSet<Vector2> path = ProceduralGenerationAlgorithm.SimpleRandomWalk(_currentPosition, walkLength);
-                // Debug.Log("New path");
-                // foreach (var tile in path)
-                // {
-                //     Debug.Log(tile.ToString());
-                // }
                 floorPositions.UnionWith(path);     //Add values from path to floorPositions while making sure that there are no duplicates
-                //floorPositions.Add(new Vector2(100, 100));
                 if (startRandomly)
                 {
-                
                     _currentPosition = floorPositions.ElementAt(Random.Range(0, floorPositions.Count));
                 }
             }

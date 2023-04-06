@@ -131,23 +131,9 @@ public static class DirectionsClass
         [new Vector2(1, 0)]   = 1,
         [new Vector2(0, -1)]  = 2,
         [new Vector2(-1, 0)]  = 3,
-        // [new Vector2(1, 1)]   = 4,
-        // [new Vector2(1, -1)]  = 5,
-        // [new Vector2(-1, -1)] = 6,
-        // [new Vector2(-1, 1)]  = 7
-    };
-
-    //up-right, down-right, down-left, up-left
-    private static readonly List<Vector2> DirectionsDiagonal = new List<Vector2>
-    {
-        new Vector2(1, 1),
-        new Vector2(1, -1),
-        new Vector2(-1, -1),
-        new Vector2(-1, 1)
     };
 
     public static List<Vector2> GetDirections() => Directions;
-    public static List<Vector2> GetDirectionsDiagonal() => DirectionsDiagonal;
     public static Dictionary<Vector2, int> GetDirectionsTypes() => DirectionsTypes;
 
     public static Vector2 GetRandomDirection()
